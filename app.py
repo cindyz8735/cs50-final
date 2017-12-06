@@ -42,10 +42,10 @@ def hello():
             playlist = playlist[::playlistId.index('/')]
         # print(playlist)
 
-        getURL = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet%2CcontentDetails&maxResults=25&playlistId=" + playlist + "&key=AIzaSyBs7FSXDVi_wTw1Nn2LHEMxt2eAWMuErfY"
+        # getURL = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet%2CcontentDetails&maxResults=25&playlistId=" + playlist + "&key=AIzaSyBs7FSXDVi_wTw1Nn2LHEMxt2eAWMuErfY"
 
-        r = requests.get(getURL)
-        print r.content
+        # r = requests.get(getURL)
+        # print r.content
 
         return redirect(request.form.get("link"), code=302)
     else:
