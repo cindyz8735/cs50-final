@@ -22,70 +22,39 @@ SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
 
-@app.route("/")
-def hello():
-    return render_template("index.html")
+@app.route('/index', methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        console.log(request.form.get("link"))
+        # Redirect user to home page
+        return redirect(request.form.get("link"))
 
-# @app.route("/")
-# def index():
-#     return render_template("index.html")
+    # User reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("index.html")
 
-@app.route("/hello")
-def hello():
-    return "Hello World!"
 
-@app.route("/members")
-def members():
-    return "Members"
 
-@app.route("/members/<string:name>/")
-def getMember(name):
-    return name
+def get_authenticated_service():
+  flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, SCOPES)
+  credentials = flow.run_console()
+  return build(API_SERVICE_NAME, API_VERSION, credentials = credentials)
 
-if __name__ == "__main__":
-    app.run()
+def channels_list_by_username(service, **kwargs):
+  results = service.channels().list(
+    **kwargs
+  ).execute()
 
-# @app.route('/index', methods=["GET", "POST"])
-# def index():
-#     if request.method == "POST":
-#         console.log(request.form.get("link"))
-#         # Redirect user to home page
-#         return redirect(request.form.get("link"))
-#
-#     # User reached route via GET (as by clicking a link or via redirect)
-#     else:
-#         return render_template("index.html")
-#
-# @app.route("/search")
-# def search():
-#     """Search for places that match query"""
-#     q = request.args.get("q") + "%"
-#
-#     console.log(q)
-#
-#     return jsonify(place)
+  print('This channel\'s ID is %s. Its title is %s, and it has %s views.' %
+       (results['items'][0]['id'],
+        results['items'][0]['snippet']['title'],
+        results['items'][0]['statistics']['viewCount']))
 
-# def get_authenticated_service():
-#   flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, SCOPES)
-#   credentials = flow.run_console()
-#   return build(API_SERVICE_NAME, API_VERSION, credentials = credentials)
-#
-# def channels_list_by_username(service, **kwargs):
-#   results = service.channels().list(
-#     **kwargs
-#   ).execute()
-#
-#   print('This channel\'s ID is %s. Its title is %s, and it has %s views.' %
-#        (results['items'][0]['id'],
-#         results['items'][0]['snippet']['title'],
-#         results['items'][0]['statistics']['viewCount']))
-#
-# if __name__ == '__main__':
-#   # When running locally, disable OAuthlib's HTTPs verification. When
-#   # running in production *do not* leave this option enabled.
-#   app.run()
-#   os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-#   service = get_authenticated_service()
-#   channels_list_by_username(service,
-#       part='snippet,contentDetails,statistics',
-#       forUsername='GoogleDevelopers')
+if __name__ == '__main__':
+  # When running locally, disable OAuthlib's HTTPs verification. When
+  # running in production *do not* leave this option enabled.
+  os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+  service = get_authenticated_service()
+  channels_list_by_username(service,
+      part='snippet,contentDetails,statistics',
+      forUsername='GoogleDevelopers')
