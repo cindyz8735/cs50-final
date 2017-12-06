@@ -21,6 +21,11 @@ SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
 
+def get_authenticated_service():
+  flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, SCOPES)
+  credentials = flow.run_console()
+  return build(API_SERVICE_NAME, API_VERSION, credentials = credentials)
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -28,9 +33,29 @@ def index():
 @app.route("/hello", methods=["GET","POST"])
 def hello():
     if request.method == "POST":
+        playlistId = request.form.get("link")[(request.form.get("link").index('=') + 1)::]
+        if (playlistId.find('/') != -1):
+            playlistId = playlistId[::playlistId.index('/')]
+
+        playlist_items_list_by_playlist_id(client,
+            part='snippet,contentDetails',
+            maxResults=25,
+            playlistId=playlistId)
+
         return redirect(request.form.get("link"), code=302)
     else:
         return render_template("index.html")
+
+
+def playlist_items_list_by_playlist_id(client, **kwargs):
+  # See full sample for function
+  kwargs = remove_empty_kwargs(**kwargs)
+
+  response = client.playlistItems().list(
+    **kwargs
+  ).execute()
+
+  return print_response(response)
 
 # @app.route("/members")
 # def members():
@@ -40,25 +65,19 @@ def hello():
 # def getMember(name):
 #     return name
 
-def get_authenticated_service():
-  flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, SCOPES)
-  credentials = flow.run_console()
-  return build(API_SERVICE_NAME, API_VERSION, credentials = credentials)
+### ORIGINAL CODE FROM GOOGLE QUICKSTART
 
-def channels_list_by_username(service, **kwargs):
-  results = service.channels().list(
-    **kwargs
-  ).execute()
+# def channels_list_by_username(service, **kwargs):
+#   results = service.channels().list(
+#     **kwargs
+#   ).execute()
+#
+#   print('This channel\'s ID is %s. Its title is %s, and it has %s views.' %
+#        (results['items'][0]['id'],
+#         results['items'][0]['snippet']['title'],
+#         results['items'][0]['statistics']['viewCount']))
 
-  print('This channel\'s ID is %s. Its title is %s, and it has %s views.' %
-       (results['items'][0]['id'],
-        results['items'][0]['snippet']['title'],
-        results['items'][0]['statistics']['viewCount']))
-
-
-
-
-
+### ALTERNATIVE
 
 # if __name__ == "__main__":
 #     app.run()
