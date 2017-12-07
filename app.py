@@ -1,33 +1,19 @@
 import os
 import re
+import json
+import urllib
+from urllib2 import urlopen
 from flask import Flask, jsonify, render_template, request, redirect, session
-# import urllib.request
 import requests
-# import flask
-
-# import google.oauth2.credentials
-# import google_auth_oauthlib.flow
-# import googleapiclient.discovery
+import subprocess
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
 
+from errno import EPIPE
+
 app = Flask(__name__)
-
-# app.secret_key = os.urandom(24)
-#
-# # The CLIENT_SECRETS_FILE variable specifies the name of a file that contains
-# # the OAuth 2.0 information for this application, including its client_id and
-# # client_secret.
-# CLIENT_SECRETS_FILE = "client_secret.json"
-#
-# # This OAuth 2.0 access scope allows for full read/write access to the
-# # authenticated user's account and requires requests to use an SSL connection.
-# SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
-# API_SERVICE_NAME = 'youtube'
-# API_VERSION = 'v3'
-
 
 @app.route("/")
 def index():
@@ -40,16 +26,25 @@ def hello():
         playlist = request.form.get("link")[(request.form.get("link").index("list=") + 5)::]
         if (playlist.find('/') != -1):
             playlist = playlist[::playlistId.index('/')]
-        # print(playlist)
 
-        # getURL = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet%2CcontentDetails&maxResults=25&playlistId=" + playlist + "&key=AIzaSyBs7FSXDVi_wTw1Nn2LHEMxt2eAWMuErfY"
+        getURL = "https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId=" + playlist + "&key=AIzaSyBs7FSXDVi_wTw1Nn2LHEMxt2eAWMuErfY"
+        page = urlopen(getURL)
+        data = json.loads(page.read())
 
-        # r = requests.get(getURL)
-        # print r.content
+        videos = []
+        lastPage = False
 
-        return redirect(request.form.get("link"), code=302)
-    else:
-        return render_template("index.html")
+        # check if nextPageToken exists. If so, add &pageToken= XX and call page again
+        while not lastPage:
+            try:
+                nextPage = data["nextPageToken"]
+                data = json.loads(urlopen(getURL + "&pageToken=" + nextPage).read())
+            except:
+                lastPage = True
+
+            for i in data['items']:
+                videos.append(i["contentDetails"]["videoId"])
+    return render_template("index.html")
 
 
 def playlist_items_list_by_playlist_id(client, **kwargs):
