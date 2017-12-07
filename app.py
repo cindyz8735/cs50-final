@@ -17,7 +17,7 @@ def hello():
 
         # get desired file format
         mp3 = True
-        if request.form.get("format") == mp4:
+        if request.form.get("format") == "mp4":
             mp3 = False
 
         # get playlist id from url
@@ -44,12 +44,27 @@ def hello():
             except:
                 lastPage = True
 
-        for video in videos:
-            if mp3:
-                print subprocess.check_output(["youtube-dl","--extract-audio", "--audio-format", "mp3", "%s" % (video)])
-            else:
-                print subprocess.check_output(["youtube-dl","%s" % (video)])
+        # check start/end for downloads
+        try:
+            start = int(request.form.get("start"))
+        except:
+            start = 0
+        try:
+            end = int(request.form.get("end"))
+        except:
+            end = len(videos)
 
+        for i in range(start, end):
+            if mp3:
+                try:
+                    print subprocess.check_output(["youtube-dl","--extract-audio", "--audio-format", "mp3", "%s" % (videos[i])])
+                except:
+                    continue
+            else:
+                try:
+                    print subprocess.check_output(["youtube-dl","%s" % (videos[i])])
+                except:
+                    continue
     return render_template("index.html")
 
 def playlist_items_list_by_playlist_id(client, **kwargs):
