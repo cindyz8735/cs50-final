@@ -1,28 +1,27 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/headjs/1.0.3/head.load.min.js"></script>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
     <title>YouTube to MP3</title>
     <link rel="stylesheet prefetch" href="../static/bootstrap.css">
-    <link rel="stylesheet prefetch" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
-    <link rel="stylesheet prefetch" href="https://fonts.googleapis.com/css?family=Cormorant+Garamond:400,600">
     <link rel="stylesheet prefetch" href="https://fonts.googleapis.com/css?family=Pontano+Sans:400,600">
     <link rel="stylesheet prefetch" href="../static/style.css">
-    <script>head.load('https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js','https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js','../static/main.js')</script>
+    <script>head.load('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js','../static/main.js')</script>
   </head>
   <body>
-    <div id="home" class="cover">
+    <div class="cover">
       <div class="container text-center">
-
           <form action="/hello" method="post">
             <div class="form-group form-inline" style="align:center">
+              <!-- link to the playlist url -->
               <input autocomplete="off" autofocus class="form-control" name="link" placeholder="Playlist URL" type="text" style="width:70%"/><br><br>
+              <!-- mp3 or mp4 download format -->
               <input type="radio" name="format" value="mp3" checked/> &nbsp; MP3 &nbsp; &nbsp;
               <input type="radio" name="format" value="mp4"/> &nbsp; MP4<br><br>
               <p>To download all videos in the playlist, leave the following fields blank.</p>
+              <!-- video numbers for the first and last songs to download (all in between will be downloaded) -->
               <input autocomplete="off" autofocus class="form-control" type="text" name="start" placeholder="0"/> &nbsp; Starting Video &nbsp;
               <input autocomplete="off" autofocus class="form-control" type="text" name="end" placeholder="25"/> &nbsp; Ending Video <br><br>
             </div>

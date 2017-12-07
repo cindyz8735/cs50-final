@@ -11,6 +11,7 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
+# main function
 @app.route("/hello", methods=["GET","POST"])
 def hello():
     if request.method == "POST":
@@ -47,35 +48,27 @@ def hello():
         # check start/end for downloads
         try:
             start = int(request.form.get("start"))
+        # no input so start at beginning of playlist
         except:
             start = 0
         try:
             end = int(request.form.get("end"))
+        # no input so end with last song in playlist
         except:
             end = len(videos)
 
         for i in range(start, end):
-            if mp3:
-                try:
+            # in case of deleted/unaccesible videos
+            try:
+                if mp3:
+                    # access command line
                     print subprocess.check_output(["youtube-dl","--extract-audio", "--audio-format", "mp3", "%s" % (videos[i])])
-                except:
-                    continue
-            else:
-                try:
+                else:
                     print subprocess.check_output(["youtube-dl","%s" % (videos[i])])
-                except:
-                    continue
+            except:
+                continue
+
     return render_template("index.html")
-
-def playlist_items_list_by_playlist_id(client, **kwargs):
-  # See full sample for function
-  kwargs = remove_empty_kwargs(**kwargs)
-
-  response = client.playlistItems().list(
-    **kwargs
-  ).execute()
-
-  return print_response(response)
 
 if __name__ == '__main__':
   app.run('localhost', 8090, debug=True)
