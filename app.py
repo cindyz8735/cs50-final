@@ -1,17 +1,9 @@
 import os
-import re
 import json
-import urllib
 from urllib2 import urlopen
-from flask import Flask, jsonify, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect
 import requests
 import subprocess
-
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-from google_auth_oauthlib.flow import InstalledAppFlow
-
-from errno import EPIPE
 
 app = Flask(__name__)
 
@@ -19,14 +11,21 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
-
 @app.route("/hello", methods=["GET","POST"])
 def hello():
     if request.method == "POST":
+
+        # get desired file format
+        mp3 = True
+        if request.form.get("format") == mp4:
+            mp3 = False
+
+        # get playlist id from url
         playlist = request.form.get("link")[(request.form.get("link").index("list=") + 5)::]
         if (playlist.find('/') != -1):
             playlist = playlist[::playlistId.index('/')]
 
+        # read playlist data
         getURL = "https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId=" + playlist + "&key=AIzaSyBs7FSXDVi_wTw1Nn2LHEMxt2eAWMuErfY"
         page = urlopen(getURL)
         data = json.loads(page.read())
@@ -34,18 +33,24 @@ def hello():
         videos = []
         lastPage = False
 
-        # check if nextPageToken exists. If so, add &pageToken= XX and call page again
+        # ensure all pages of the data are visited
         while not lastPage:
+            for i in data['items']:
+                # get id of all videos in playlist
+                videos.append("https://www.youtube.com/watch?v=" + i["contentDetails"]["videoId"])
             try:
                 nextPage = data["nextPageToken"]
                 data = json.loads(urlopen(getURL + "&pageToken=" + nextPage).read())
             except:
                 lastPage = True
 
-            for i in data['items']:
-                videos.append(i["contentDetails"]["videoId"])
-    return render_template("index.html")
+        for video in videos:
+            if mp3:
+                print subprocess.check_output(["youtube-dl","--extract-audio", "--audio-format", "mp3", "%s" % (video)])
+            else:
+                print subprocess.check_output(["youtube-dl","%s" % (video)])
 
+    return render_template("index.html")
 
 def playlist_items_list_by_playlist_id(client, **kwargs):
   # See full sample for function
@@ -57,9 +62,5 @@ def playlist_items_list_by_playlist_id(client, **kwargs):
 
   return print_response(response)
 
-
 if __name__ == '__main__':
-  # When running locally, disable OAuthlib's HTTPs verification. When
-  # running in production *do not* leave this option enabled.
-  # os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
   app.run('localhost', 8090, debug=True)
